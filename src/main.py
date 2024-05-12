@@ -2,6 +2,8 @@ from train_models import create_ANN, get_model_performance_minimal, get_predicte
 from prepare_data import load_model, load_csv
 from datetime import date
 import tensorflow as tf
+import pandas as pd
+from preprocess_data import preprocess_data
 
 def initialize_ANN(df, output_dir=f'/artifacts/model_{date.today()}.pkl'):
     categorical_columns = ['gender', 'married', 'dependents', 'education', 'self_employed', 'credit_history', 'property_area']
@@ -27,8 +29,8 @@ def main():
     training_df = load_csv('data/raw_data.csv')
 
     model_2_dir = initialize_ANN(training_df, output_dir="artifacts/model_2.pkl")
-    model_2 = load_model(model_1_dir)
-    get_predicted(validation_df, model_1, 'artifacts/predictions_1.csv')
+    model_2 = load_model("artifacts/model_2.pkl")
+    get_predicted(validation_df, model_2, 'artifacts/predictions_2.csv')
 
 
 if __name__ == '__main__':

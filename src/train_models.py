@@ -1,16 +1,17 @@
-from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix, accuracy_score
-from preprocess_data import preprocess_data, label_encode
-from sklearn.inspection import permutation_importance
+from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix
+from sklearn.preprocessing import LabelEncoder
+from preprocess_data import preprocess_data
 from sklearn.model_selection import train_test_split
 from prepare_data import dump_model
 import matplotlib.pyplot as plt
 import tensorflow as tf
 import seaborn as sns
-import pandas as pd
+import warnings
+warnings.simplefilter(action="ignore", category=FutureWarning)
 
 def create_ANN(df, model, output_dir):
     X = df.drop(columns=['loan_status'], axis=1)
-    y = label_encode(df['loan_status'])
+    y = LabelEncoder().fit_transform(df['loan_status'])
     
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=1)
     X_train = preprocess_data(X_train)
@@ -26,22 +27,6 @@ def create_ANN(df, model, output_dir):
 
     print("done...")
     return (model, history, X_train, X_test, y_train, y_test)
-
-def score(y_true, y_pred_proba):
-    y_pred = (y_pred_proba >= 0.5).astype(int)
-    accuracy = accuracy_score(y_true, y_pred)
-    return accuracy
-
-def get_feature_importance(model, X_val, y_val):
-    def scoring_wrapper(estimator, X, y):
-        y_pred_proba = estimator.predict(X)
-        return score(y, y_pred_proba)
-    
-    result = permutation_importance(model, X_val, y_val, scoring=scoring_wrapper, n_repeats=10, random_state=42)
-    categorical_columns = ['gender', 'married', 'dependents', 'education', 'self_employed', 'credit_history', 'property_area']
-    numeric_columns = ['applicant_income', 'coapplicant_income', 'loan_amount', 'loan_amount_term']
-    return pd.DataFrame({'attribute': categorical_columns+numeric_columns, 'importance': result.importances_mean})
-    
 
 def get_model_performance(model, history, X_test, y_test):
     y_pred_proba = model.predict(X_test, verbose=0)
