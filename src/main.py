@@ -28,9 +28,9 @@ def main():
     validation_df = load_csv('data/validation.csv')
     training_df = load_csv('data/raw_data.csv')
 
-    model_2_dir = initialize_ANN(training_df, output_dir="artifacts/model_2.pkl")
+    # model_2_dir = initialize_ANN(training_df, output_dir="artifacts/model_2.pkl")
     model_2 = load_model("artifacts/model_2.pkl")
-    get_predicted(validation_df, model_2, 'artifacts/predictions_2.csv')
+    # get_predicted(validation_df, model_2, 'artifacts/predictions_2.csv')
 
 
 if __name__ == '__main__':
