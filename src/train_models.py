@@ -80,7 +80,7 @@ def get_model_performance_minimal(model, X_test, y_test):
 def get_predicted(raw_df, model, output_dir='../artifacts/predictions.csv'):
     df = raw_df.copy()
     X = preprocess_data(df)
-    df['loan_status'] = ['Y' if val > 0.5 else 'N' for val in model.predict(X)]
-    df.to_csv(output_dir, sep=',')
+    df['loan_status'] = ['Approved' if val > 0.5 else 'Rejected' for val in model.predict(X)]
+    df.to_csv(output_dir, sep=',', index=False)
     print(f'PREDICTION SAVED TO: {output_dir}')
     return df

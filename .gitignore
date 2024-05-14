@@ -1,2 +1,37 @@
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
+# Node.js specific ignores
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Python specific ignores
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pyo
+*.pyc
+*.pyo
+*.pyd
+*.pyo
+
+# Virtual environment
+venv/
+env/
+pip-wheel-metadata/
+
+# IDE or editor ignores
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+.env

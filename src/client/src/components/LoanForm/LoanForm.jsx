@@ -1,8 +1,11 @@
 // src/LoanForm.js
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { TextField, Button, Typography, Grid, FormControl, InputLabel, Select, MenuItem, Slider, Box, FormControlLabel, Switch, RadioGroup, Radio } from '@mui/material';
+import 'react-toastify/dist/ReactToastify.css';
+import { useToasts } from 'react-toast-notifications';
+import { loanApplicationsContext } from '../../lib/Context';
 
-const LoanForm = () => {
+const LoanForm = ({ onClose }) => {
     const [formData, setFormData] = useState({
         gender: '',
         married: '',
@@ -17,48 +20,74 @@ const LoanForm = () => {
         credit_history: ''
     });
 
-    const [loanStatus, setLoanStatus] = useState('');
+    const [formErrors, setFormErrors] = useState({});
+    const [loanApplications, setLoanApplications] = useContext(loanApplicationsContext);
+    const { addToast } = useToasts();
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
+        setFormErrors({ ...formErrors, [name]: '' });
     };
 
     const handleSliderChange = (name) => (event, newValue) => {
         setFormData({ ...formData, [name]: newValue });
     };
 
+    const validateForm = () => {
+        const errors = {};
+        // Check for required fields
+        if (!formData.gender) errors.gender = 'Gender is required';
+        if (!formData.married) errors.married = 'Marital status is required';
+        if (!formData.dependents) errors.dependents = 'Dependents count is required';
+        if (!formData.education) errors.education = 'Education status is required';
+        if (!formData.self_employed) errors.self_employed = 'Self-employed status is required';
+        if (!formData.property_area) errors.property_area = 'Property area is required';
+        if (!formData.credit_history) errors.credit_history = 'Credit history is required';
+
+        setFormErrors(errors);
+        return Object.keys(errors).length === 0; // Form is valid if there are no errors
+    };
+
     const handleLoanPrediction = async () => {
-        try {
-            const response = await fetch('http://localhost:5000/predict', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(formData)
-            });
+        const isFormValid = validateForm();
 
-            if (!response.ok) {
-                throw new Error('Failed to predict loan status');
-            }
+        if (isFormValid) {
+            try {
+                const response = await fetch('http://localhost:5000/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData),
+                });
 
-            const data = await response.json();
-            if (data && data.loan_status) {
-                setLoanStatus(data.loan_status);
-            } else {
-                setLoanStatus('Unknown');
+                if (!response.ok) {
+                    throw new Error('Failed to predict loan status');
+                }
+
+                const data = await response.json();
+                if (data) {
+                    setLoanApplications([...loanApplications, data[0]])
+                    if (data[0]['loan_status'] == 'Approved') {
+                        addToast('Loan Application Approved', { appearance: 'success' });
+                    } else {
+                        addToast('Loan Application Rejected', { appearance: 'error' });
+                    }
+
+                    setTimeout(() => {
+                        onClose();
+                    }, 2000);
+                    onClose();
+                }
+            } catch (error) {
+                console.error('Error predicting loan status:', error);
             }
-        } catch (error) {
-            console.error('Error predicting loan status:', error);
-            setLoanStatus('Error');
         }
     };
 
     return (
         <div>
-            <Typography variant="h4" gutterBottom>
-                Loan Prediction Form
-            </Typography>
             <Grid container spacing={2}>
                 <Grid item xs={12} sm={6}>
                     <FormControl fullWidth variant="outlined">
@@ -71,6 +100,7 @@ const LoanForm = () => {
                                 name: 'gender',
                                 id: 'gender',
                             }}
+                            error={formErrors.gender}
                         >
                             <MenuItem value="Male">Male</MenuItem>
                             <MenuItem value="Female">Female</MenuItem>
@@ -88,6 +118,7 @@ const LoanForm = () => {
                                 name: 'married',
                                 id: 'married',
                             }}
+                            error={formErrors.married}
                         >
                             <MenuItem value="Yes">Yes</MenuItem>
                             <MenuItem value="No">No</MenuItem>
@@ -105,6 +136,7 @@ const LoanForm = () => {
                                 name: 'dependents',
                                 id: 'dependents',
                             }}
+                            error={!!formErrors.dependents}
                         >
                             <MenuItem value="0">0</MenuItem>
                             <MenuItem value="1">1</MenuItem>
@@ -124,6 +156,7 @@ const LoanForm = () => {
                                 name: 'education',
                                 id: 'education',
                             }}
+                            error={formErrors.education}
                         >
                             <MenuItem value="Graduate">Graduate</MenuItem>
                             <MenuItem value="Not Graduate">Not Graduate</MenuItem>
@@ -141,6 +174,7 @@ const LoanForm = () => {
                                 name: 'property_area',
                                 id: 'property_area',
                             }}
+                            error={formErrors.property_area}
                         >
                             <MenuItem value="Rural">Rural</MenuItem>
                             <MenuItem value="Semiurban">Semiurban</MenuItem>
@@ -159,6 +193,7 @@ const LoanForm = () => {
                                 name: 'self_employed',
                                 id: 'self_employed',
                             }}
+                            error={formErrors.self_employed}
                         >
                             <MenuItem value="Yes">Yes</MenuItem>
                             <MenuItem value="No">No</MenuItem>
@@ -176,9 +211,10 @@ const LoanForm = () => {
                                 name: 'credit_history',
                                 id: 'credit_history',
                             }}
+                            error={formErrors.credit_history}
                         >
-                            <MenuItem value="1">Yes</MenuItem>
-                            <MenuItem value="0">No</MenuItem>
+                            <MenuItem value={"1"}>Yes</MenuItem>
+                            <MenuItem value={"0"}>No</MenuItem>
                         </Select>
                     </FormControl>
                 </Grid>
@@ -232,15 +268,11 @@ const LoanForm = () => {
                 </Grid>
             </Grid>
             <Button variant="contained" color="primary" onClick={handleLoanPrediction}>
-                Predict Loan Status
+                Submit
             </Button>
-            {loanStatus && (
-                <Typography variant="h6" gutterBottom>
-                    Loan Status: {loanStatus}
-                </Typography>
-            )}
         </div>
     );
 };
 
 export default LoanForm;
+
