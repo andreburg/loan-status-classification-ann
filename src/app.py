@@ -5,7 +5,6 @@ import pandas as pd
 import joblib
 from prepare_data import load_csv
 from train_models import get_predicted
-from dotenv import load_dotenv
 import plotly.express as px
 
 app = Flask(__name__)
