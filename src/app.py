@@ -16,13 +16,14 @@ CORS(app, origins='*')
 model = joblib.load('artifacts/model_2.pkl')
 
 mongo_uri = os.getenv("MONGODB_URI")
-client = MongoClient(mongo_uri)
-db = client['loan_prediction_db']
-collection = db['loan_predictions']
 
 @app.route('/predict', methods=['POST'])
 def predict_loan_approval():
-    
+
+    client = MongoClient(mongo_uri)
+    db = client['loan_prediction_db']
+    collection = db['loan_predictions']
+
     df = pd.DataFrame()
     try:
         df = get_full_df()
@@ -48,14 +49,20 @@ def predict_loan_approval():
 
     for _, row in input_df.iterrows():
         collection.insert_one(row.to_dict())
+
+    client.close()
     
     return input_df.to_json(orient='records')
 
 def get_full_df():
+    client = MongoClient(mongo_uri)
+    db = client['loan_prediction_db']
+    collection = db['loan_predictions']
     col = collection.find()
     col_list = list(col)
     df = pd.DataFrame(col_list)
     df.drop(columns=['_id'], inplace=True)
+    client.close()
     return df
 
 @app.route('/loans', methods=['GET'])
