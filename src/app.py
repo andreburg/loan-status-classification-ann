@@ -11,7 +11,7 @@ import plotly.express as px
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, origins='https://bc-loan-application.onrender.com')
+CORS(app)
 
 model = joblib.load('artifacts/model_2.pkl')
 

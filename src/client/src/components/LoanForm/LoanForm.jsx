@@ -51,7 +51,7 @@ const LoanForm = ({ onClose }) => {
 
     const handleLoanPrediction = async () => {
         const isFormValid = validateForm();
-
+        console.log(formData)
         if (isFormValid) {
             try {
                 const response = await fetch('https://bc-loan-application-server.onrender.com/predict', {
