@@ -26,6 +26,8 @@ def predict_loan_approval():
     latest_loan = collection.find_one(sort=[('loan_id', -1)])
     loan_id = f"LP00{int(latest_loan['loan_id'][2:]) + 1}"
 
+    print(loan_id)
+
     input_data = request.get_json() 
     input_data['applicant_income'] = float(input_data['applicant_income'])
     input_data['coapplicant_income'] = float(input_data['coapplicant_income'])
