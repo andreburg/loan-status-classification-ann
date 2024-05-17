@@ -80,11 +80,7 @@ def get_loan_status_hist():
 
 @app.route('/analytics/feature_importance_bar', methods=['GET'])
 def get_feature_importance_bar():
-    df = pd.DataFrame()
-    try:
-        df = get_full_df()
-    except:
-        pass
+    df = pd.read_csv('artifacts/feature_importance.csv')
     fig = px.bar(df, x='importance', y='attribute',
              orientation='h',
              labels={'importance': 'Importance', 'attribute': 'Attribute'})
