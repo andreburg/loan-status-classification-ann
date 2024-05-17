@@ -11,7 +11,7 @@ import plotly.express as px
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, origins='*')
+CORS(app, origins='https://bc-loan-application.onrender.com')
 
 model = joblib.load('artifacts/model_2.pkl')
 
@@ -29,6 +29,8 @@ def predict_loan_approval():
         df = get_full_df()
     except:
         pass
+
+    print(df)
 
     loan_id = f"LP00{max([int(loan_id[2:]) for loan_id in df['loan_id']]) + 1}"
 
