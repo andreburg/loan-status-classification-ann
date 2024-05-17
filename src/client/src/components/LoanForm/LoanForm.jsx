@@ -54,7 +54,7 @@ const LoanForm = ({ onClose }) => {
 
         if (isFormValid) {
             try {
-                const response = await fetch('https://bc-loan-application-server.onrender.com/predict', {
+                const response = await fetch('http://localhost:5000/predict', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

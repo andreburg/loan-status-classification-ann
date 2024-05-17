@@ -10,7 +10,7 @@ const AnalyticsPage = () => {
     useEffect(() => {
         const fetchPlot = async () => {
             try {
-                let loanStatusHistResponse = await fetch('https://bc-loan-application-server.onrender.com/analytics/loan_status_hist', {
+                let loanStatusHistResponse = await fetch('http://localhost:5000/analytics/loan_status_hist', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -20,7 +20,7 @@ const AnalyticsPage = () => {
                 console.log(data)
                 setLoanStatusHist(data);
 
-                let featureImportanceBarResponse = await fetch('https://bc-loan-application-server.onrender.com/analytics/feature_importance_bar', {
+                let featureImportanceBarResponse = await fetch('http://localhost:5000/analytics/feature_importance_bar', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',

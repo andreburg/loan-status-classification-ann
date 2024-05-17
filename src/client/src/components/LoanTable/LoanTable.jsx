@@ -37,7 +37,7 @@ const LoanTable = () => {
     }, [loanApplications, page, rowsPerPage])
 
     useEffect(() => {
-        fetch('https://bc-loan-application-server.onrender.com/loans', {
+        fetch('http://localhost:5000/loans', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

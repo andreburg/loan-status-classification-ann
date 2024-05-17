@@ -1,23 +1,31 @@
 from flask import Flask, request
+import os
+from dotenv import load_dotenv
+from pymongo import MongoClient
 from preprocess_data import preprocess_data
 from flask_cors import CORS
 import pandas as pd
 import joblib
-from prepare_data import load_csv
-from train_models import get_predicted
 import plotly.express as px
+
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 
 model = joblib.load('artifacts/model_2.pkl')
 
+mongo_uri = os.getenv("MONGODB_URI")
+client = MongoClient(mongo_uri)
+db = client['loan_prediction_db']
+collection = db['loan_predictions']
+
 @app.route('/predict', methods=['POST'])
 def predict_loan_approval():
 
-    df = load_csv('artifacts/predictions_web.csv')
+    latest_loan = collection.find_one(sort=[('loan_id', -1)])
+    loan_id = f"LP00{int(latest_loan['loan_id'][2:]) + 1}"
 
-    loan_id = f"LP00{max([int(loan_id[2:]) for loan_id in df['loan_id']]) + 1}"
     input_data = request.get_json() 
     input_data['applicant_income'] = float(input_data['applicant_income'])
     input_data['coapplicant_income'] = float(input_data['coapplicant_income'])
@@ -30,29 +38,35 @@ def predict_loan_approval():
     prediction = ["Approved" if val > 0.5 else "Rejected" for val in y_pred_proba]
     input_df['loan_status'] = prediction
     input_df['loan_id'] = [loan_id]
-    df = pd.concat([df, input_df])
 
-    file_path = 'artifacts/predictions_web.csv'
-
-    df.to_csv(file_path, index=False)
+    for _, row in input_df.iterrows():
+        collection.insert_one(row.to_dict())
     
     return input_df.to_json(orient='records')
 
-@app.route('/loans/predict', methods=['GET'])
-def get_predict_loans():
-    df = load_csv('artifacts/predictions_web.csv')
-    df = get_predicted(df, model,'artifacts/predictions_web.csv')
-
-    return df.to_json(orient='records')
+def get_full_df():
+    col = collection.find()
+    col_list = list(col)
+    df = pd.DataFrame(col_list)
+    df.drop(columns=['_id'], inplace=True)
+    return df
 
 @app.route('/loans', methods=['GET'])
 def get_loans():
-    df = load_csv('artifacts/predictions_web.csv')
+    df = pd.DataFrame()
+    try:
+        df = get_full_df()
+    except:
+        pass
     return df.to_json(orient='records')
 
 @app.route('/analytics/loan_status_hist', methods=['GET'])
 def get_loan_status_hist():
-    df = load_csv('artifacts/predictions_web.csv')
+    df = pd.DataFrame()
+    try:
+        df = get_full_df()
+    except:
+        pass
     fig = px.histogram(x=df['loan_status'])
     fig.update_layout(xaxis_title='Loan Status', yaxis_title='Frequency',
                 height=600, width=800, title={
@@ -64,7 +78,11 @@ def get_loan_status_hist():
 
 @app.route('/analytics/feature_importance_bar', methods=['GET'])
 def get_feature_importance_bar():
-    df = load_csv('artifacts/feature_importance.csv')
+    df = pd.DataFrame()
+    try:
+        df = get_full_df()
+    except:
+        pass
     fig = px.bar(df, x='importance', y='attribute',
              orientation='h',
              labels={'importance': 'Importance', 'attribute': 'Attribute'})
