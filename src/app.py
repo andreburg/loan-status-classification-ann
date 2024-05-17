@@ -22,9 +22,14 @@ collection = db['loan_predictions']
 
 @app.route('/predict', methods=['POST'])
 def predict_loan_approval():
+    
+    df = pd.DataFrame()
+    try:
+        df = get_full_df()
+    except:
+        pass
 
-    latest_loan = collection.find_one(sort=[('loan_id', -1)])
-    loan_id = f"LP00{int(latest_loan['loan_id'][2:]) + 1}"
+    loan_id = f"LP00{max([int(loan_id[2:]) for loan_id in df['loan_id']]) + 1}"
 
     print(loan_id)
 
