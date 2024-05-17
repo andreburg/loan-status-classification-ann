@@ -12,6 +12,7 @@ const AnalyticsPage = () => {
             try {
                 let loanStatusHistResponse = await fetch('https://bc-loan-application-server.onrender.com/analytics/loan_status_hist', {
                     method: 'GET',
+                    mode: 'cors',
                     headers: {
                         'Content-Type': 'application/json',
                     },
@@ -22,6 +23,7 @@ const AnalyticsPage = () => {
 
                 let featureImportanceBarResponse = await fetch('https://bc-loan-application-server.onrender.com/analytics/feature_importance_bar', {
                     method: 'GET',
+                    mode: 'cors',
                     headers: {
                         'Content-Type': 'application/json',
                     },

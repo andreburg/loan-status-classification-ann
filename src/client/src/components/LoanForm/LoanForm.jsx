@@ -56,6 +56,7 @@ const LoanForm = ({ onClose }) => {
             try {
                 const response = await fetch('https://bc-loan-application-server.onrender.com/predict', {
                     method: 'POST',
+                    mode: 'cors',
                     headers: {
                         'Content-Type': 'application/json',
                     },
